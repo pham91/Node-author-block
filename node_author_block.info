@@ -1,0 +1,4 @@
+name = Node Author Block
+description = "Showing author information as a custom block"
+core = 7.x
+

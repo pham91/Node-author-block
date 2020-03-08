@@ -1,0 +1,100 @@
+<?php
+
+/**
+ * Implements hook_permission().
+ */
+function node_author_block_permission() {
+  return array(
+    'access node author block' => array(
+      'title' => t('Access node author block'),
+      'description' => t('Display node author information block to the user.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function node_author_block_block_info() {
+  $blocks = array();
+  
+  $blocks['node-author'] = array(
+      'info' => t('Node author information'),
+      'cache' => DRUPAL_NO_CACHE,
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function node_author_block_block_view($delta) {
+  $block = array();
+
+  switch ($delta) {
+    case 'node-author':
+      //check user permissions here.
+      if (user_access('access node author block')) {
+        $block['content'] = array (
+          '#markup' => _node_author_block_user_info(),
+          '#attached' => array (
+            'css' => array (
+              drupal_get_path('module', 'node_author_block') . '/node_author_block.css',
+            ),
+          ),
+        );
+      }
+      break;
+  }
+
+  return $block;
+}
+
+/**
+ * Retrieving author information and render html
+ */
+function _node_author_block_user_info() {
+
+  //check if we are viewing a node page
+  if (arg(0) == 'node' && is_numeric(arg(1)) && empty(arg(2))) {
+
+    $node = menu_get_object();
+
+    // Make sure we actually got a node.
+    if (!$node || !is_object($node)) {
+      watchdog('node_author_block', 'Block failed to get proper node, got: @type.', array('@type' => gettype($node)), WATCHDOG_WARNING);
+      return;
+    }
+
+    //load node author
+    $account = user_load($node->uid);
+    //image
+    $user_image = theme(
+      'image_style', array(
+        'style_name' => 'node_author_thumbnail',
+        'path' => !empty($account->picture->uri) ? $account->picture->uri : variable_get('user_picture_default'),
+      )
+    );
+    //username
+    $username = $account->name; 
+    //date created
+    $created = date('M d, Y', $node->created);
+    //pass variables to template file
+    return theme('author_block', ['user_image' => $user_image, 'username' => $username, 'created' => $created]);
+    
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function node_author_block_theme() {
+  return array(
+    'author_block' => array(
+      'path' =>  drupal_get_path('module', 'node_author_block'),
+      'template' => 'templates/node-author-block',
+      'variables' => array('account' => NULL, 'message' => NULL),
+    ),
+  );
+}

@@ -1,0 +1,20 @@
+.author-block {
+  padding: 1em;
+  border: solid 1px #ccc8c8;
+  background-color: #e6e6e6;
+  border-radius: 4px;
+}
+
+.author-block .author-right {
+  display: inline-block;
+}
+
+.author-block .author-left {
+  vertical-align: top;
+  display: inline-block;
+}
+
+.author-block .author-left img {
+	border-radius: 50%;
+}
+
